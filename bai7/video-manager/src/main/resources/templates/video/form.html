@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout-main}">
+<head>
+    <title th:text="${video.videoId} == null ? 'Thêm Video Mới' : 'Sửa Video'"></title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h2 class="mb-4 text-primary">
+        <i class="bi bi-camera-video"></i> 
+        <span th:text="${video.videoId} == null ? 'Thêm Video Mới' : 'Chỉnh Sửa Video'"></span>
+    </h2>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <form th:action="@{/admin/videos/save}" th:object="${video}" method="post" enctype="multipart/form-data">
+                <input type="hidden" th:field="*{videoId}">
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Tiêu đề video <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-lg" th:field="*{title}" required placeholder="Nhập tiêu đề video...">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Link Poster (URL hình ảnh)</label>
+                            <input type="url" class="form-control" th:field="*{poster}" placeholder="https://example.com/poster.jpg">
+                            <small class="text-muted">Dán link ảnh từ Google, Imgur, v.v.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Danh mục <span class="text-danger">*</span></label>
+                            <select class="form-select" th:field="*{category.categoryId}" required>
+                                <option value="">-- Chọn danh mục --</option>
+                                <option th:each="c : ${categories}" 
+                                        th:value="${c.categoryId}" 
+                                        th:text="${c.categoryname}"></option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Mô tả video</label>
+                            <textarea class="form-control" rows="5" th:field="*{description}" placeholder="Nhập mô tả chi tiết..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Trạng thái</label>
+                            <div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" th:field="*{active}" value="true" id="activeYes">
+                                    <label class="form-check-label" for="activeYes">Active (Hiển thị)</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" th:field="*{active}" value="false" id="activeNo">
+                                    <label class="form-check-label" for="activeNo">Inactive (Ẩn)</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <label class="form-label fw-bold">Preview Poster</label>
+                            <div class="mb-3">
+                                <img th:if="${video.poster}" th:src="@{${video.poster}}" class="img-fluid rounded border" style="max-height: 300px;" alt="Poster">
+                                <div th:unless="${video.poster}" class="bg-light border rounded d-flex align-items-center justify-content-center" style="height: 300px;">
+                                    <span class="text-muted">Chưa có ảnh bìa</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+                <div class="text-end">
+                    <a th:href="@{/admin/videos}" class="btn btn-secondary btn-lg me-3">
+                        <i class="bi bi-arrow-left"></i> Hủy bỏ
+                    </a>
+                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                        <i class="bi bi-save"></i> 
+                        <span th:text="${video.videoId} == null ? 'Thêm Video' : 'Cập Nhật'"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout-main}">
+<head>
+    <title>Danh sách Users</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h2 class="mb-4"><i class="bi bi-people-fill"></i> Quản Lý Users</h2>
+    <div class="card">
+        <div class="card-header d-flex justify-content-between">
+            <a th:href="@{/admin/users/add}" class="btn btn-primary"><i class="bi bi-plus"></i> Thêm User</a>
+            <form th:action="@{/admin/users}" class="d-flex">
+                <input type="text" name="keyword" th:value="${keyword}" class="form-control me-2" placeholder="Tìm kiếm...">
+                <button class="btn btn-outline-success">Tìm</button>
+            </form>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        <th>Admin</th>
+                        <th>Active</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="u : ${page.content}">
+                        <td th:text="${u.id}"></td>
+                        <td th:text="${u.username}"></td>
+                        <td th:text="${u.fullname}"></td>
+                        <td th:text="${u.email}"></td>
+                        <td th:text="${u.admin} ? 'Yes' : 'No'"></td>
+                        <td th:text="${u.active} ? 'Yes' : 'No'"></td>
+                        <td>
+                            <a th:href="@{/admin/users/edit/{id}(id=${u.id})}" class="btn btn-sm btn-warning">Sửa</a>
+                            <a th:href="@{/admin/users/delete/{id}(id=${u.id})}" 
+                               onclick="return confirm('Xóa user này?')" class="btn btn-sm btn-danger">Xóa</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Phân trang -->
+            <nav th:if="${page.totalPages > 1}">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${page.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/(page=0,size=${page.size},keyword=${keyword})}">First</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, page.totalPages-1)}"
+                        th:classappend="${i == page.number} ? 'active'">
+                        <a class="page-link" th:href="@{/(page=${i},size=${page.size},keyword=${keyword})}" th:text="${i+1}"></a>
+                    </li>
+                    <li class="page-item" th:classappend="${page.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/(page=${page.totalPages-1},size=${page.size},keyword=${keyword})}">Last</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>

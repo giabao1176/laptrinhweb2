@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "VideoManagerApplication",
+            "request": "launch",
+            "mainClass": "com.huy.VideoManagerApplication",
+            "projectName": "video-manager"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-VideoManagerApplication<video-manager>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.huy.video_manager.VideoManagerApplication",
+            "projectName": "video-manager",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=64455 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=video-manager"
+        }
+    ]
+}

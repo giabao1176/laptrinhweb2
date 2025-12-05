@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout-main}">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản Lý Video - AJAX + REST API</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid mt-4">
+        <h2 class="text-primary mb-4 text-center fw-bold">
+            QUẢN LÝ VIDEO - AJAX + REST API
+        </h2>
+
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-primary text-white">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-4">
+                        <input type="text" id="keyword" class="form-control form-control-lg" placeholder="Tìm tiêu đề video...">
+                    </div>
+                    <div class="col-md-3">
+                        <select id="categoryId" class="form-select form-select-lg">
+                            <option value="">-- Tất cả danh mục --</option>
+                            <option th:each="c : ${categories}" 
+                                    th:value="${c.categoryId}" 
+                                    th:text="${c.categoryname}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-5 text-end">
+                        <button id="btnSearch" class="btn btn-light btn-lg me-2">
+                            Tìm Kiếm
+                        </button>
+                        <a th:href="@{/admin/videos/add}" class="btn btn-success btn-lg">
+                            Thêm Video Mới
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Poster</th>
+                                <th>Tiêu đề</th>
+                                <th>Danh mục</th>
+                                <th>Lượt xem</th>
+                                <th>Mô tả</th>
+                                <th>Trạng thái</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="videoBody">
+                            <tr>
+                                <td colspan="8" class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Đang tải...</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card-footer bg-white text-center">
+                <div id="pagination" class="btn-group" role="group"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 0;
+
+        function loadVideos(page = 0) {
+            currentPage = page;
+            $.ajax({
+                url: '/api/videos', // ← ĐÚNG 100%, KHÔNG CẦN contextPath NỮA!!!
+                type: 'GET',
+                data: {
+                    page: page,
+                    size: 10,
+                    keyword: $('#keyword').val().trim(),
+                    categoryId: $('#categoryId').val()
+                },
+                success: function(res) {
+                    let html = '';
+                    if (res.content && res.content.length > 0) {
+                        res.content.forEach(v => {
+                            html += `<tr>
+                                <td><strong>${v.videoId}</strong></td>
+                                <td><img src="${v.poster || '/images/no-image.jpg'}" width="100" class="rounded shadow-sm" style="height:60px; object-fit:cover;"></td>
+                                <td><strong>${v.title}</strong></td>
+                                <td>${v.category?.categoryname || '<em class="text-muted">Chưa có</em>'}</td>
+                                <td><strong>${v.views.toLocaleString()}</strong></td>
+                                <td>${v.description ? v.description.substring(0, 60) + '...' : ''}</td>
+                                <td>
+                                    <span class="badge ${v.active ? 'bg-success' : 'bg-secondary'}">
+                                        ${v.active ? 'Active' : 'Inactive'}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="/admin/videos/edit/${v.videoId}" class="btn btn-warning btn-sm">Sửa</a>
+                                    <button onclick="deleteVideo(${v.videoId})" class="btn btn-danger btn-sm">Xóa</button>
+                                </td>
+                            </tr>`;
+                        });
+                    } else {
+                        html = `<tr><td colspan="8" class="text-center py-5 text-muted">
+                                    <h4>Không có video nào</h4>
+                                </td></tr>`;
+                    }
+                    $('#videoBody').html(html);
+
+                    // Phân trang
+                    let pagination = '';
+                    for (let i = 0; i < res.totalPages; i++) {
+                        pagination += `<button type="button" class="btn ${i === res.currentPage ? 'btn-primary' : 'btn-outline-primary'} mx-1" 
+                                        onclick="loadVideos(${i})">${i + 1}</button>`;
+                    }
+                    $('#pagination').html(pagination);
+                },
+                error: function(xhr) {
+                    $('#videoBody').html(`<tr><td colspan="8" class="text-center text-danger py-5">
+                                            <h5>Lỗi API - Mã: ${xhr.status}</h5>
+                                            <p>Kiểm tra console (F12) để xem chi tiết</p>
+                                          </td></tr>`);
+                }
+            });
+        }
+
+        function deleteVideo(id) {
+            if (confirm('Xóa thật không Huy ơi?')) {
+                $.ajax({
+                    url: '/api/videos/' + id,
+                    type: 'DELETE',
+                    success: function() {
+                        loadVideos(currentPage);
+                        alert('Xóa thành công!');
+                    }
+                });
+            }
+        }
+
+        $(document).ready(function() {
+            loadVideos(0);
+
+            $('#btnSearch').click(() => loadVideos(0));
+            $('#keyword, #categoryId').on('input change', function() {
+                clearTimeout(this.timer);
+                this.timer = setTimeout(() => loadVideos(0), 500);
+            });
+        });
+    </script>
+</div>
+</body>
+</html>
